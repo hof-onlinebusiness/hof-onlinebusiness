@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking System</title>
+</head>
+<body>
+    <h1>Book an Appointment</h1>
+    <form id="bookingForm">
+        <label for="date">Select Date:</label>
+        <input type="date" id="date" required>
+        <label for="time">Select Time:</label>
+        <input type="time" id="time" required>
+        <button type="submit">Book</button>
+    </form>
+    <div id="status"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
