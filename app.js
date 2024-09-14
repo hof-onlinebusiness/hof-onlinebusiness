@@ -19,6 +19,12 @@ form.addEventListener('submit', async (e) => {
 
     const date = document.getElementById('date').value;
     const time = document.getElementById('time').value;
+
+    if (!date || !time) {
+        alert('Please select both a date and a time!');
+        return;
+    }
+
     const slot = `${date}_${time}`;
 
     // Check availability
@@ -31,13 +37,13 @@ form.addEventListener('submit', async (e) => {
             statusDiv.innerText = 'This time slot is fully booked.';
         } else {
             // Add booking
-            data.bookings.push({ user: 'anonymous' });  // Replace 'anonymous' with actual user ID or info
+            data.bookings.push({ user: 'anonymous' });  // Replace 'anonymous' with actual user info
             await slotRef.update({ bookings: data.bookings });
             statusDiv.innerText = 'Your appointment is booked!';
         }
     } else {
         // Create new booking slot
-        await slotRef.set({ bookings: [{ user: 'anonymous' }] });  // Replace 'anonymous' with actual user ID or info
+        await slotRef.set({ bookings: [{ user: 'anonymous' }] });  // Replace 'anonymous' with actual user info
         statusDiv.innerText = 'Your appointment is booked!';
     }
 });
