@@ -14,7 +14,7 @@ form.addEventListener('submit', async (e) => {
     }
 
     const slot = `${date}_${time}`;
-    const slotRef = db.collection('appointments').doc(slot);
+    const slotRef = db.collection('appointments').doc(slot);  // Uses the 'db' defined in index.html
     const docSnap = await slotRef.get();
 
     if (docSnap.exists()) {
