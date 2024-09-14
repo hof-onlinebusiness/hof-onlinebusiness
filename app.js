@@ -1,13 +1,24 @@
-// Initialize Firebase
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDZfTvPrbExyZ5UMsRNZ_IPYH4NDe61tM8",
+  authDomain: "hof-online-booking-system.firebaseapp.com",
+  projectId: "hof-online-booking-system",
+  storageBucket: "hof-online-booking-system.appspot.com",
+  messagingSenderId: "513439830348",
+  appId: "1:513439830348:web:356c7a6e2ad5fbfeffbfe9",
+  measurementId: "G-FNQE3GHVDD"
 };
-firebase.initializeApp(firebaseConfig);
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 const db = firebase.firestore();
 const form = document.getElementById('bookingForm');
