@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book an Appointment</title>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
 </head>
 <body>
     <h1>Book an Appointment</h1>
@@ -31,12 +38,6 @@
 
     <div id="status"></div>
 
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-
-    <!-- Firebase Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-
     <!-- Initialize Firebase -->
     <script>
         // Your Firebase configuration
@@ -55,6 +56,8 @@
         const db = firebase.firestore();  // Firestore initialized here
     </script>
 
-    <script src="app.js"></script> <!-- Link to your app.js -->
+    <!-- Link to your app.js -->
+    <script src="app.js"></script>
+
 </body>
 </html>
