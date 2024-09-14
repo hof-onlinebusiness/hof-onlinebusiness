@@ -4,75 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book an Appointment</title>
-    <!-- Add Firebase SDK via script tag -->
-    <script type="module" src="app.js"></script>
-    <!-- Add Styles -->
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        form {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        label {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-
-        input, button, select {
-            padding: 10px;
-            font-size: 1em;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #218838;
-        }
-
-        #status {
-            margin-top: 20px;
-            font-size: 1.1em;
-            color: #333;
-        }
-
-        @media (max-width: 600px) {
-            form {
-                width: 90%;
-                padding: 20px;
-            }
-
-            input, button, select {
-                width: 100%;
-                margin-bottom: 20px;
-            }
-        }
+        /* Add your CSS styles here */
     </style>
 </head>
 <body>
@@ -100,5 +40,25 @@
     </form>
 
     <div id="status"></div>
+
+    <!-- Initialize Firebase -->
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "hof-online-booking-system.firebaseapp.com",
+            projectId: "hof-online-booking-system",
+            storageBucket: "hof-online-booking-system.appspot.com",
+            messagingSenderId: "513439830348",
+            appId: "1:513439830348:web:356c7a6e2ad5fbfeffbfe9",
+            measurementId: "G-FNQE3GHVDD"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+
+    <script src="app.js"></script> <!-- Your app.js file for handling form submission -->
 </body>
 </html>
