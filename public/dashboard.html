@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="dashboard-style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+
+    <canvas id="appointmentsChart" width="400" height="200"></canvas>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "hof-online-booking-system.firebaseapp.com",
+            projectId: "hof-online-booking-system",
+            storageBucket: "hof-online-booking-system.appspot.com",
+            messagingSenderId: "513439830348",
+            appId: "1:513439830348:web:356c7a6e2ad5fbfeffbfe9",
+            measurementId: "G-FNQE3GHVDD"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const ctx = document.getElementById('appointmentsChart').getContext('2d');
+
+        // Fetch booking data from Firestore
+        async function fetchData() {
+            const bookingsData = {};
+            const snapshot = await db.collection('appointments').get();
+
+            snapshot.forEach(doc => {
+                const { bookings } = doc.data();
+                const date = doc.id.split('_')[0]; // Extract the date
+
+                if (!bookingsData[date]) {
+                    bookingsData[date] = 0;
+                }
+                bookingsData[date] += bookings.length;
+            });
+
+            return bookingsData;
+        }
+
+        // Render chart with booking data
+        async function renderChart() {
+            const bookingsData = await fetchData();
+            const labels = Object.keys(bookingsData);
+            const data = Object.values(bookingsData);
+
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Appointments per Day',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        renderChart();
+    </script>
+</body>
+</html>

@@ -4,43 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book an Appointment</title>
+    <link rel="stylesheet" href="style.css">
 
     <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-
-    <!-- Firebase Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-firestore.js"></script>
 
 </head>
 <body>
     <h1>Book an Appointment</h1>
 
     <form id="bookingForm">
-        <label for="date">Select Date:</label>
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" required>
+
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+
+        <label for="contactNumber">Contact Number</label>
+        <input type="tel" id="contactNumber" required>
+
+        <label for="date">Select Date</label>
         <input type="date" id="date" required>
 
-        <label for="time">Select Time:</label>
-        <select id="time">
+        <label for="time">Select Time</label>
+        <select id="time" required>
             <option value="">Select a Time</option>
-            <option value="09:00">09:00 AM</option>
-            <option value="10:00">10:00 AM</option>
-            <option value="11:00">11:00 AM</option>
-            <option value="12:00">12:00 PM</option>
-            <option value="13:00">01:00 PM</option>
-            <option value="14:00">02:00 PM</option>
-            <option value="15:00">03:00 PM</option>
-            <option value="16:00">04:00 PM</option>
-            <option value="17:00">05:00 PM</option>
         </select>
 
-        <button type="submit">Book</button>
+        <label for="specialRequests">Questions or Special Requests</label>
+        <textarea id="specialRequests" rows="4" placeholder="Enter any special requests or questions"></textarea>
+
+        <button type="button" id="reviewBtn">Review Information</button>
     </form>
 
-    <div id="status"></div>
+    <div id="status" class="status"></div>
 
-    <!-- Initialize Firebase -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Your Booking Details</h3>
+            <p id="confirmationDetails"></p>
+            <button id="confirmSubmit">Confirm</button>
+            <button id="editInfo">Go Back and Edit</button>
+        </div>
+    </div>
+
     <script>
-        // Your Firebase configuration
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "hof-online-booking-system.firebaseapp.com",
@@ -53,10 +66,69 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();  // Firestore initialized here
+        const db = firebase.firestore();
+
+        // Helper function to generate time slots between start and end times
+        function generateTimeSlots(startTime, endTime) {
+            const slots = [];
+            let current = new Date(`1970-01-01T${startTime}:00`);
+            const end = new Date(`1970-01-01T${endTime}:00`);
+
+            while (current <= end) {
+                const timeString = current.toTimeString().substring(0, 5);
+                slots.push(timeString);
+                current.setMinutes(current.getMinutes() + 60); // Add 1 hour
+            }
+
+            return slots;
+        }
+
+            // Fetch availability from Firestore and update time slots
+            const dateInput = document.getElementById('date');
+            const timeSelect = document.getElementById('time');
+
+            dateInput.addEventListener('change', async () => {
+                const selectedDate = new Date(dateInput.value);
+                const dayOfWeek = selectedDate.toLocaleString('en-us', { weekday: 'long' }).toLowerCase(); // Get the day name (e.g., 'monday')
+
+                // Clear previous time options
+                timeSelect.innerHTML = '<option value="">Select a Time</option>';
+
+                // Fetch availability from Firestore
+                const availabilityDoc = await db.collection('availability').doc('weekly').get();
+                if (availabilityDoc.exists) {
+                    const availability = availabilityDoc.data();
+
+                    // Check if the selected date is in the unavailable dates list
+                    if (availability.unavailableDates && availability.unavailableDates.includes(dateInput.value)) {
+                        alert('This date is unavailable for booking.');
+                        return;
+                    }
+
+                    const availableTimes = availability[dayOfWeek];
+
+                    // Check if the day is available
+                    if (availableTimes && availability[dayOfWeek].isAvailable) {
+                        const [startTime, endTime] = availability[dayOfWeek].time.split('-'); // Extract start and end times
+                        const timeSlots = generateTimeSlots(startTime, endTime); // Generate time slots
+
+                        // Populate the time dropdown
+                        timeSlots.forEach((timeSlot) => {
+                            const option = document.createElement('option');
+                            option.value = timeSlot;
+                            option.textContent = timeSlot;
+                            timeSelect.appendChild(option);
+                        });
+                    } else {
+                        alert('This day is unavailable for booking.');
+                    }
+                } else {
+                    alert('Availability data not found.');
+                }
+            });
+
     </script>
 
-    <!-- Link to your app.js -->
     <script src="app.js"></script>
 
 </body>

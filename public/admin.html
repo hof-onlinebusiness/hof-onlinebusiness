@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Set Availability</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-firestore.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel: Set Availability</h1>
+
+        <form id="availabilityForm" class="availability-form">
+            <!-- Time availability for each day of the week (Monday to Sunday) -->
+            <div class="day-section">
+                <label for="mondayStart">Monday</label>
+                <select id="mondayStart" class="time-select"></select>
+                <span>to</span>
+                <select id="mondayEnd" class="time-select"></select>
+                <button type="button" class="toggle-btn" id="mondayToggle">Available</button>
+            </div>
+
+            <div class="day-section">
+                <label for="tuesdayStart">Tuesday</label>
+                <select id="tuesdayStart" class="time-select"></select>
+                <span>to</span>
+                <select id="tuesdayEnd" class="time-select"></select>
+                <button type="button" class="toggle-btn" id="tuesdayToggle">Unavailable</button>
+            </div>
+
+            <div class="day-section">
+                <label for="wednesdayStart">Wednesday</label>
+                <select id="wednesdayStart" class="time-select"></select>
+                <span>to</span>
+                <select id="wednesdayEnd" class="time-select"></select>
+                <button type="button" class="toggle-btn" id="wednesdayToggle">Available</button>
+            </div>
+
+            <div class="day-section">
+                <label for="thursdayStart">Thursday</label>
+                <select id="thursdayStart" class="time-select"></select>
+                <span>to</span>
+                <select id="thursdayEnd" class="time-select"></select>
+                <button type="button" class="toggle-btn" id="thursdayToggle">Available</button>
+            </div>
+
+            <div class="day-section">
+                <label for="fridayStart">Friday</label>
+                <select id="fridayStart" class="time-select"></select>
+                <span>to</span>
+                <select id="fridayEnd" class="time-select"></select>
+                <button type="button" class="toggle-btn" id="fridayToggle">Available</button>
+            </div>
+
+            <div class="day-section">
+                <label for="saturdayStart">Saturday</label>
+                <select id="saturdayStart" class="time-select"></select>
+                <span>to</span>
+                <select id="saturdayEnd" class="time-select"></select>
+                <button type="button" class="toggle-btn" id="saturdayToggle">Available</button>
+            </div>
+
+            <div class="day-section">
+                <label for="sundayStart">Sunday</label>
+                <select id="sundayStart" class="time-select"></select>
+                <span>to</span>
+                <select id="sundayEnd" class="time-select"></select>
+                <button type="button" class="toggle-btn" id="sundayToggle">Available</button>
+            </div>
+
+            <!-- Unavailable Dates Section with Date Range Picker and Delete Icon -->
+            <div class="vacation-section">
+                <h3>Unavailable Dates (Vacations, Holidays, etc.)</h3>
+                <label for="unavailableStart">Select Date Range:</label>
+                <input type="date" id="unavailableStart" placeholder="Start Date">
+                <span>to</span>
+                <input type="date" id="unavailableEnd" placeholder="End Date">
+                <button type="button" id="addUnavailableRange">Add Unavailable Date Range</button>
+
+                <ul id="unavailableList"></ul>
+            </div>
+
+            <button type="submit" class="submit-btn">Save Availability</button>
+        </form>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "hof-online-booking-system.firebaseapp.com",
+            projectId: "hof-online-booking-system",
+            storageBucket: "hof-online-booking-system.appspot.com",
+            messagingSenderId: "513439830348",
+            appId: "1:513439830348:web:356c7a6e2ad5fbfeffbfe9",
+            measurementId: "G-FNQE3GHVDD"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Time slots from 6 AM to 11 PM, with 1-hour intervals
+        const timeSlots = [
+            '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
+            '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+            '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+        ];
+
+        // Function to populate dropdowns with time slots
+        function populateTimeDropdown(startId, endId) {
+            const startSelect = document.getElementById(startId);
+            const endSelect = document.getElementById(endId);
+
+            timeSlots.forEach(time => {
+                const startOption = document.createElement('option');
+                const endOption = document.createElement('option');
+                startOption.value = time;
+                endOption.value = time;
+                startOption.textContent = time;
+                endOption.textContent = time;
+                startSelect.appendChild(startOption);
+                endSelect.appendChild(endOption);
+            });
+        }
+
+        // Populate time dropdowns for each day
+        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
+            populateTimeDropdown(`${day}Start`, `${day}End`);
+        });
+
+        // Load current availability on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const availabilityDoc = await db.collection('availability').doc('weekly').get();
+            if (availabilityDoc.exists) {
+                const availability = availabilityDoc.data();
+
+                // Populate the availability form with saved data
+                for (const day in availability) {
+                    if (availability[day] && availability[day].isAvailable !== undefined) {
+                        const [startTime, endTime] = availability[day].time.split('-');
+                        document.getElementById(`${day}Start`).value = startTime;
+                        document.getElementById(`${day}End`).value = endTime;
+
+                        const toggleButton = document.getElementById(`${day}Toggle`);
+                        toggleButton.innerText = availability[day].isAvailable ? 'Available' : 'Unavailable';
+                    }
+                }
+
+                // Load unavailable dates
+                if (availability.unavailableDates) {
+                    availability.unavailableDates.forEach(date => {
+                        addUnavailableDateToList(date);
+                    });
+                }
+            }
+        });
+
+        // Toggle availability on and off
+        document.querySelectorAll('.toggle-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const day = e.target.id.replace('Toggle', '');
+                if (e.target.innerText === 'Available') {
+                    e.target.innerText = 'Unavailable';
+                } else {
+                    e.target.innerText = 'Available';
+                }
+            });
+        });
+
+        // Function to save availability to Firestore
+        document.getElementById('availabilityForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const availability = {
+                monday: {
+                    isAvailable: document.getElementById('mondayToggle').innerText === 'Available',
+                    time: `${document.getElementById('mondayStart').value}-${document.getElementById('mondayEnd').value}`
+                },
+                tuesday: {
+                    isAvailable: document.getElementById('tuesdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('tuesdayStart').value}-${document.getElementById('tuesdayEnd').value}`
+                },
+                wednesday: {
+                    isAvailable: document.getElementById('wednesdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('wednesdayStart').value}-${document.getElementById('wednesdayEnd').value}`
+                },
+                thursday: {
+                    isAvailable: document.getElementById('thursdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('thursdayStart').value}-${document.getElementById('thursdayEnd').value}`
+                },
+                friday: {
+                    isAvailable: document.getElementById('fridayToggle').innerText === 'Available',
+                    time: `${document.getElementById('fridayStart').value}-${document.getElementById('fridayEnd').value}`
+                },
+                saturday: {
+                    isAvailable: document.getElementById('saturdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('saturdayStart').value}-${document.getElementById('saturdayEnd').value}`
+                },
+                sunday: {
+                    isAvailable: document.getElementById('sundayToggle').innerText === 'Available',
+                    time: `${document.getElementById('sundayStart').value}-${document.getElementById('sundayEnd').value}`
+                },
+                unavailableDates: Array.from(document.querySelectorAll('#unavailableList li')).map(li => li.innerText)
+            };
+
+            // Save to Firestore
+            try {
+                await db.collection('availability').doc('weekly').set(availability);
+                document.getElementById('status').innerText = 'Availability saved successfully!';
+            } catch (error) {
+                document.getElementById('status').innerText = 'Error saving availability. Please try again.';
+            }
+        });
+
+        // Add unavailable date range
+        document.getElementById('addUnavailableRange').addEventListener('click', () => {
+            const start = document.getElementById('unavailableStart').value;
+            const end = document.getElementById('unavailableEnd').value;
+
+            if (!start || !end || new Date(start) > new Date(end)) {
+                alert('Please select a valid date range.');
+                return;
+            }
+
+            // Generate all dates in the range and add them
+            const dateRange = getDateRange(start, end);
+            dateRange.forEach(date => {
+                addUnavailableDateToList(date); // Add each date to the list
+                saveUnavailableDateToFirestore(date); // Save each date to Firestore
+            });
+
+            // Clear inputs
+            document.getElementById('unavailableStart').value = '';
+            document.getElementById('unavailableEnd').value = '';
+        });
+
+        // Function to get all dates in a range
+        function getDateRange(start, end) {
+            const dates = [];
+            let current = new Date(start);
+            const endDate = new Date(end);
+
+            while (current <= endDate) {
+                dates.push(current.toISOString().split('T')[0]); // Format date as YYYY-MM-DD
+                current.setDate(current.getDate() + 1); // Increment day
+            }
+
+            return dates;
+        }
+
+        // Save unavailable date to Firestore
+        function saveUnavailableDateToFirestore(date) {
+            db.collection('availability').doc('weekly').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (!data.unavailableDates.includes(date)) {
+                        data.unavailableDates.push(date); // Add the new date
+                        db.collection('availability').doc('weekly').set(data); // Save back to Firestore
+                    }
+                }
+            });
+        }
+
+        // Helper to add date to the list with delete icon
+        function addUnavailableDateToList(date) {
+            const li = document.createElement('li');
+            li.innerHTML = `${date} <button class="delete-btn" data-date="${date}">❌</button>`;
+            document.getElementById('unavailableList').appendChild(li);
+
+            // Add delete functionality
+            li.querySelector('.delete-btn').addEventListener('click', function () {
+                this.parentElement.remove();
+                removeUnavailableDate(this.dataset.date);
+            });
+        }
+
+        // Function to remove unavailable date from Firestore
+        function removeUnavailableDate(date) {
+            db.collection('availability').doc('weekly').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const index = data.unavailableDates.indexOf(date);
+                    if (index > -1) {
+                        data.unavailableDates.splice(index, 1); // Remove date from array
+                        db.collection('availability').doc('weekly').set(data); // Save back to Firestore
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
