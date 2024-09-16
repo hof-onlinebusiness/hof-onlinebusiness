@@ -8,48 +8,46 @@
 
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-firestore.js"></script>
 
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-firestore.js"></script>
 </head>
 <body>
-    <h1>Book an Appointment</h1>
+    <div class="container">
+        <h1>Book an Appointment</h1>
 
-    <form id="bookingForm">
-        <label for="firstName">First Name</label>
-        <input type="text" id="firstName" required>
+        <form id="bookingForm">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" required>
 
-        <label for="lastName">Last Name</label>
-        <input type="text" id="lastName" required>
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" required>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
 
-        <label for="contactNumber">Contact Number</label>
-        <input type="tel" id="contactNumber" required>
+            <label for="contactNumber">Contact Number</label>
+            <input type="tel" id="contactNumber" required pattern="[0-9]{10}" title="Phone number should be 10 digits">
 
-        <label for="date">Select Date</label>
-        <input type="date" id="date" required>
+            <label for="date">Select Date</label>
+            <input type="date" id="date" required>
 
-        <label for="time">Select Time</label>
-        <select id="time" required>
-            <option value="">Select a Time</option>
-        </select>
+            <label for="time">Select Time</label>
+            <select id="time" disabled>
+                <option value="">Select a Time</option>
+            </select>
 
-        <label for="specialRequests">Questions or Special Requests</label>
-        <textarea id="specialRequests" rows="4" placeholder="Enter any special requests or questions"></textarea>
+            <label for="specialRequests">Questions or Special Requests</label>
+            <textarea id="specialRequests" placeholder="Enter any special requests or questions"></textarea>
 
-        <button type="button" id="reviewBtn">Review Information</button>
-    </form>
+            <!-- Button container for aligned buttons -->
+            <div class="button-container">
+                <button type="button" id="combinedButton">Review & Book</button>
+                <button type="button" id="resetButton">Reset Form</button>
+            </div>
+        </form>
 
-    <div id="status" class="status"></div>
-
-    <div id="confirmationModal" class="modal">
-        <div class="modal-content">
-            <h3>Confirm Your Booking Details</h3>
-            <p id="confirmationDetails"></p>
-            <button id="confirmSubmit">Confirm</button>
-            <button id="editInfo">Go Back and Edit</button>
-        </div>
+        <div id="status"></div>
     </div>
 
     <script>
@@ -68,68 +66,139 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Helper function to generate time slots between start and end times
-        function generateTimeSlots(startTime, endTime) {
-            const slots = [];
-            let current = new Date(`1970-01-01T${startTime}:00`);
-            const end = new Date(`1970-01-01T${endTime}:00`);
+        let availabilityData = {};
+        let unavailableDates = [];
 
-            while (current <= end) {
-                const timeString = current.toTimeString().substring(0, 5);
-                slots.push(timeString);
-                current.setMinutes(current.getMinutes() + 60); // Add 1 hour
+        // Disable past dates
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("date").setAttribute("min", today);
+
+        // Load availability data from Firestore
+        async function loadAvailability() {
+            const availabilityDoc = await db.collection('availability').doc('weekly').get();
+            if (availabilityDoc.exists) {
+                availabilityData = availabilityDoc.data();
+                unavailableDates = availabilityData.unavailableDates || [];
+                console.log("Loaded unavailable dates:", unavailableDates);
             }
-
-            return slots;
         }
 
-            // Fetch availability from Firestore and update time slots
-            const dateInput = document.getElementById('date');
-            const timeSelect = document.getElementById('time');
+        // Format the date as YYYY-MM-DD
+        function formatDate(date) {
+            const d = new Date(date);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            const year = d.getFullYear();
 
-            dateInput.addEventListener('change', async () => {
-                const selectedDate = new Date(dateInput.value);
-                const dayOfWeek = selectedDate.toLocaleString('en-us', { weekday: 'long' }).toLowerCase(); // Get the day name (e.g., 'monday')
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
 
-                // Clear previous time options
-                timeSelect.innerHTML = '<option value="">Select a Time</option>';
+            return [year, month, day].join('-');
+        }
 
-                // Fetch availability from Firestore
-                const availabilityDoc = await db.collection('availability').doc('weekly').get();
-                if (availabilityDoc.exists) {
-                    const availability = availabilityDoc.data();
+        // Populate time dropdown based on available time for the selected date
+        document.getElementById('date').addEventListener('change', (e) => {
+            const selectedDate = e.target.value;
+            const selectedDay = new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+            const timeDropdown = document.getElementById('time');
+            timeDropdown.innerHTML = '<option value="">Select a Time</option>';
+            timeDropdown.disabled = true; // Disable time selection initially
 
-                    // Check if the selected date is in the unavailable dates list
-                    if (availability.unavailableDates && availability.unavailableDates.includes(dateInput.value)) {
-                        alert('This date is unavailable for booking.');
-                        return;
-                    }
+            const formattedDate = formatDate(selectedDate);
 
-                    const availableTimes = availability[dayOfWeek];
+            // Check if the selected date is in the unavailable dates list
+            if (unavailableDates.includes(formattedDate)) {
+                alert(`Bookings are not allowed on ${formattedDate} as it has been marked as unavailable (vacation, holiday, etc.).`);
+                return;
+            }
 
-                    // Check if the day is available
-                    if (availableTimes && availability[dayOfWeek].isAvailable) {
-                        const [startTime, endTime] = availability[dayOfWeek].time.split('-'); // Extract start and end times
-                        const timeSlots = generateTimeSlots(startTime, endTime); // Generate time slots
+            // Check if the selected day is available
+            if (availabilityData[selectedDay] && availabilityData[selectedDay].isAvailable) {
+                const [startTime, endTime] = availabilityData[selectedDay].time.split('-');
+                let time = startTime;
+                while (time <= endTime) {
+                    const option = document.createElement('option');
+                    option.value = time;
+                    option.textContent = time;
+                    timeDropdown.appendChild(option);
 
-                        // Populate the time dropdown
-                        timeSlots.forEach((timeSlot) => {
-                            const option = document.createElement('option');
-                            option.value = timeSlot;
-                            option.textContent = timeSlot;
-                            timeSelect.appendChild(option);
-                        });
-                    } else {
-                        alert('This day is unavailable for booking.');
-                    }
-                } else {
-                    alert('Availability data not found.');
+                    // Increment by 1 hour
+                    let [hours, minutes] = time.split(':');
+                    hours = parseInt(hours, 10) + 1;
+                    time = `${hours < 10 ? '0' : ''}${hours}:00`;
                 }
-            });
+                timeDropdown.disabled = false; // Enable time selection
+            } else {
+                alert(`Booking is unavailable for ${selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)}.`);
+            }
+        });
 
+        // Function to reset the form
+        document.getElementById('resetButton').addEventListener('click', (e) => {
+            document.getElementById('bookingForm').reset();
+            document.getElementById('time').disabled = true;
+        });
+
+        // Combined review and book functionality
+        document.getElementById('combinedButton').addEventListener('click', (e) => {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const contactNumber = document.getElementById('contactNumber').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const specialRequests = document.getElementById('specialRequests').value;
+
+            if (!date || !time) {
+                alert("Please select both a date and a time!");
+                return;
+            }
+
+            const confirmationMessage = `
+                Please review your information:\n
+                Name: ${firstName} ${lastName}\n
+                Email: ${email}\n
+                Contact Number: ${contactNumber}\n
+                Date: ${date}\n
+                Time: ${time}\n
+                Special Requests: ${specialRequests ? specialRequests : 'None'}
+            `;
+
+            const confirmBooking = confirm(confirmationMessage);
+            if (confirmBooking) {
+                submitBooking(firstName, lastName, email, contactNumber, date, time, specialRequests);
+            }
+        });
+
+        // Booking submission
+        async function submitBooking(firstName, lastName, email, contactNumber, date, time, specialRequests) {
+            const slot = `${date}_${time}`;
+            const slotRef = db.collection('appointments').doc(slot);
+            const docSnap = await slotRef.get();
+
+            if (docSnap.exists) {
+                const data = docSnap.data();
+                if (data.bookings.length >= 3) {
+                    alert('This time slot is fully booked.');
+                } else {
+                    data.bookings.push({ firstName, lastName, email, contactNumber, specialRequests });
+                    await slotRef.update({ bookings: data.bookings });
+                    alert('Your appointment has been successfully booked!');
+                    document.getElementById('bookingForm').reset(); // Clear form after successful booking
+                    document.getElementById('time').disabled = true; // Disable time dropdown after reset
+                }
+            } else {
+                await slotRef.set({
+                    bookings: [{ firstName, lastName, email, contactNumber, specialRequests }]
+                });
+                alert('Your appointment has been successfully booked!');
+                document.getElementById('bookingForm').reset(); // Clear form after successful booking
+                document.getElementById('time').disabled = true; // Disable time dropdown after reset
+            }
+        }
+
+        // Load availability data when the page loads
+        loadAvailability();
     </script>
-
-    <script src="app.js"></script>
-
 </body>
 </html>

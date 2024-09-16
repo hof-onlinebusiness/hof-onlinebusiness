@@ -1,88 +1,61 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f4f4f9;
+/* Container and form styling */
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
     text-align: center;
-    color: #333;
+    margin-bottom: 20px;
 }
 
-form {
-    max-width: 400px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px; /* Add padding to all sides */
-    padding-right: 40px; /* Specifically increase right-side padding */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-label {
-    font-size: 1.1em;
-    margin-bottom: 8px;
-    display: block;
-    color: #333;
-}
-
+/* Input and select fields with padding */
 input, select, textarea {
     width: 100%;
     padding: 10px;
-    margin-bottom: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.button-container {
-    text-align: center; /* Center the button horizontally */
-}
-
-button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 30px; /* Adjust padding for a better button size */
-    font-size: 1.2em;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-    display: inline-block; /* Ensure the button is displayed inline for centering */
-    margin: 0 auto; /* This centers the button within its container */
-}
-
-
-button:hover {
-    background-color: #218838;
-}
-
-.status {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 1.2em;
-    color: #333;
-}
-
-.error {
-    color: red;
-}
-
-/* Modal styles */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 20px;
     border-radius: 5px;
-    width: 80%;
-    max-width: 500px;
+    box-sizing: border-box;  /* Ensures padding is included in width */
+}
+
+/* Padding specifically on right side for better layout */
+input, select, textarea {
+    padding-right: 10px;
+}
+
+/* Button container for styling the buttons together */
+.button-container {
+    display: flex;
+    justify-content: center;  /* Center the button */
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Individual button styling */
+button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+}
+
+/* Button hover effects */
+button:hover {
+    opacity: 0.9;
+}
+
+/* Styling the status message */
+#status {
+    margin-top: 20px;
+    color: #28a745;
+    text-align: center;
 }

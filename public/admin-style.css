@@ -1,70 +1,164 @@
-/* General body styles */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    margin: 0;
-    padding: 0;
-}
-
-/* Container styling */
+/* General container styling */
 .container {
-    max-width: 600px;
-    margin: 50px auto;
+    max-width: 800px;
+    margin: 0 auto;
     padding: 20px;
-    background-color: white;
+    background-color: #f9f9f9;
+    border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
 }
 
-/* Form heading */
 h1 {
     text-align: center;
+    font-family: 'Arial', sans-serif;
     color: #333;
+    margin-bottom: 20px;
 }
 
-/* Day section styling */
+/* Styling for the day sections */
 .day-section {
-    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.day-section label {
+    flex: 1;
+    font-weight: bold;
+    color: #555;
+}
+
+.time-select {
+    flex: 2;
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* Available and Unavailable button classes */
+.toggle-btn {
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.available {
+    background-color: #4CAF50; /* Green for available */
+    color: white;
+}
+
+.unavailable {
+    background-color: #f44336; /* Red for unavailable */
+    color: white;
+}
+
+/* Styling for the unavailable dates section */
+.vacation-section {
+    margin-top: 30px;
+}
+
+.vacation-section h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.vacation-section label {
+    font-weight: bold;
+    color: #555;
+    margin-right: 10px;
+}
+
+.vacation-section input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+#addUnavailableRange {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#addUnavailableRange:hover {
+    background-color: #0056b3;
+}
+
+/* Unavailable date list */
+#unavailableList {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+#unavailableList li {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-label {
-    flex: 1;
-    font-size: 1.1em;
-    color: #555;
+#unavailableList li button.delete-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #f44336;
+    font-size: 16px;
 }
 
-.time-select {
-    flex: 1;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    margin-left: 10px;
+#unavailableList li button.delete-btn i {
+    color: #f44336; /* Red trash icon */
+    font-size: 16px;
 }
 
-/* Submit button styling */
+/* Save button styling */
 .submit-btn {
     width: 100%;
     padding: 15px;
     background-color: #28a745;
     color: white;
     border: none;
-    font-size: 1.2em;
+    border-radius: 4px;
+    font-size: 16px;
     cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+    margin-top: 20px;
+    transition: background-color 0.2s;
 }
 
 .submit-btn:hover {
     background-color: #218838;
 }
 
-/* Status message */
+/* Status message styling */
 .status {
+    margin-top: 15px;
+    font-size: 16px;
     text-align: center;
-    margin-top: 20px;
-    font-size: 1.1em;
-    color: green;
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status.error {
+    color: #f44336;
 }

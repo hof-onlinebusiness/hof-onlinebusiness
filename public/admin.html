@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Set Availability</title>
     <link rel="stylesheet" href="admin-style.css">
     <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.7/firebase-firestore.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script> <!-- For Font Awesome icons -->
 </head>
 <body>
     <div class="container">
@@ -19,7 +19,7 @@
                 <select id="mondayStart" class="time-select"></select>
                 <span>to</span>
                 <select id="mondayEnd" class="time-select"></select>
-                <button type="button" class="toggle-btn" id="mondayToggle">Available</button>
+                <button type="button" class="toggle-btn available" id="mondayToggle">Available</button>
             </div>
 
             <div class="day-section">
@@ -27,7 +27,7 @@
                 <select id="tuesdayStart" class="time-select"></select>
                 <span>to</span>
                 <select id="tuesdayEnd" class="time-select"></select>
-                <button type="button" class="toggle-btn" id="tuesdayToggle">Unavailable</button>
+                <button type="button" class="toggle-btn available" id="tuesdayToggle">Available</button>
             </div>
 
             <div class="day-section">
@@ -35,7 +35,7 @@
                 <select id="wednesdayStart" class="time-select"></select>
                 <span>to</span>
                 <select id="wednesdayEnd" class="time-select"></select>
-                <button type="button" class="toggle-btn" id="wednesdayToggle">Available</button>
+                <button type="button" class="toggle-btn available" id="wednesdayToggle">Available</button>
             </div>
 
             <div class="day-section">
@@ -43,7 +43,7 @@
                 <select id="thursdayStart" class="time-select"></select>
                 <span>to</span>
                 <select id="thursdayEnd" class="time-select"></select>
-                <button type="button" class="toggle-btn" id="thursdayToggle">Available</button>
+                <button type="button" class="toggle-btn available" id="thursdayToggle">Available</button>
             </div>
 
             <div class="day-section">
@@ -51,7 +51,7 @@
                 <select id="fridayStart" class="time-select"></select>
                 <span>to</span>
                 <select id="fridayEnd" class="time-select"></select>
-                <button type="button" class="toggle-btn" id="fridayToggle">Available</button>
+                <button type="button" class="toggle-btn available" id="fridayToggle">Available</button>
             </div>
 
             <div class="day-section">
@@ -59,7 +59,7 @@
                 <select id="saturdayStart" class="time-select"></select>
                 <span>to</span>
                 <select id="saturdayEnd" class="time-select"></select>
-                <button type="button" class="toggle-btn" id="saturdayToggle">Available</button>
+                <button type="button" class="toggle-btn available" id="saturdayToggle">Available</button>
             </div>
 
             <div class="day-section">
@@ -67,7 +67,7 @@
                 <select id="sundayStart" class="time-select"></select>
                 <span>to</span>
                 <select id="sundayEnd" class="time-select"></select>
-                <button type="button" class="toggle-btn" id="sundayToggle">Available</button>
+                <button type="button" class="toggle-btn available" id="sundayToggle">Available</button>
             </div>
 
             <!-- Unavailable Dates Section with Date Range Picker and Delete Icon -->
@@ -147,7 +147,15 @@
                         document.getElementById(`${day}End`).value = endTime;
 
                         const toggleButton = document.getElementById(`${day}Toggle`);
-                        toggleButton.innerText = availability[day].isAvailable ? 'Available' : 'Unavailable';
+                        if (availability[day].isAvailable) {
+                            toggleButton.innerText = 'Available';
+                            toggleButton.classList.remove('unavailable');
+                            toggleButton.classList.add('available');
+                        } else {
+                            toggleButton.innerText = 'Unavailable';
+                            toggleButton.classList.remove('available');
+                            toggleButton.classList.add('unavailable');
+                        }
                     }
                 }
 
@@ -160,61 +168,20 @@
             }
         });
 
-        // Toggle availability on and off
+        // Toggle availability on and off and change button color
         document.querySelectorAll('.toggle-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const day = e.target.id.replace('Toggle', '');
                 if (e.target.innerText === 'Available') {
                     e.target.innerText = 'Unavailable';
+                    e.target.classList.remove('available');
+                    e.target.classList.add('unavailable');
                 } else {
                     e.target.innerText = 'Available';
+                    e.target.classList.remove('unavailable');
+                    e.target.classList.add('available');
                 }
             });
-        });
-
-        // Function to save availability to Firestore
-        document.getElementById('availabilityForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const availability = {
-                monday: {
-                    isAvailable: document.getElementById('mondayToggle').innerText === 'Available',
-                    time: `${document.getElementById('mondayStart').value}-${document.getElementById('mondayEnd').value}`
-                },
-                tuesday: {
-                    isAvailable: document.getElementById('tuesdayToggle').innerText === 'Available',
-                    time: `${document.getElementById('tuesdayStart').value}-${document.getElementById('tuesdayEnd').value}`
-                },
-                wednesday: {
-                    isAvailable: document.getElementById('wednesdayToggle').innerText === 'Available',
-                    time: `${document.getElementById('wednesdayStart').value}-${document.getElementById('wednesdayEnd').value}`
-                },
-                thursday: {
-                    isAvailable: document.getElementById('thursdayToggle').innerText === 'Available',
-                    time: `${document.getElementById('thursdayStart').value}-${document.getElementById('thursdayEnd').value}`
-                },
-                friday: {
-                    isAvailable: document.getElementById('fridayToggle').innerText === 'Available',
-                    time: `${document.getElementById('fridayStart').value}-${document.getElementById('fridayEnd').value}`
-                },
-                saturday: {
-                    isAvailable: document.getElementById('saturdayToggle').innerText === 'Available',
-                    time: `${document.getElementById('saturdayStart').value}-${document.getElementById('saturdayEnd').value}`
-                },
-                sunday: {
-                    isAvailable: document.getElementById('sundayToggle').innerText === 'Available',
-                    time: `${document.getElementById('sundayStart').value}-${document.getElementById('sundayEnd').value}`
-                },
-                unavailableDates: Array.from(document.querySelectorAll('#unavailableList li')).map(li => li.innerText)
-            };
-
-            // Save to Firestore
-            try {
-                await db.collection('availability').doc('weekly').set(availability);
-                document.getElementById('status').innerText = 'Availability saved successfully!';
-            } catch (error) {
-                document.getElementById('status').innerText = 'Error saving availability. Please try again.';
-            }
         });
 
         // Add unavailable date range
@@ -266,19 +233,6 @@
             });
         }
 
-        // Helper to add date to the list with delete icon
-        function addUnavailableDateToList(date) {
-            const li = document.createElement('li');
-            li.innerHTML = `${date} <button class="delete-btn" data-date="${date}">❌</button>`;
-            document.getElementById('unavailableList').appendChild(li);
-
-            // Add delete functionality
-            li.querySelector('.delete-btn').addEventListener('click', function () {
-                this.parentElement.remove();
-                removeUnavailableDate(this.dataset.date);
-            });
-        }
-
         // Function to remove unavailable date from Firestore
         function removeUnavailableDate(date) {
             db.collection('availability').doc('weekly').get().then(doc => {
@@ -292,7 +246,64 @@
                 }
             });
         }
-    </script>
 
+        // Helper to add date to the list with delete icon
+        function addUnavailableDateToList(date) {
+            const li = document.createElement('li');
+            li.innerHTML = `${date} <button class="delete-btn" data-date="${date}">❌</button>`;
+            document.getElementById('unavailableList').appendChild(li);
+
+            // Add delete functionality
+            li.querySelector('.delete-btn').addEventListener('click', function () {
+                this.parentElement.remove();
+                removeUnavailableDate(this.dataset.date);
+            });
+        }
+
+        // Function to save availability to Firestore
+        document.getElementById('availabilityForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const availability = {
+                monday: {
+                    isAvailable: document.getElementById('mondayToggle').innerText === 'Available',
+                    time: `${document.getElementById('mondayStart').value}-${document.getElementById('mondayEnd').value}`
+                },
+                tuesday: {
+                    isAvailable: document.getElementById('tuesdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('tuesdayStart').value}-${document.getElementById('tuesdayEnd').value}`
+                },
+                wednesday: {
+                    isAvailable: document.getElementById('wednesdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('wednesdayStart').value}-${document.getElementById('wednesdayEnd').value}`
+                },
+                thursday: {
+                    isAvailable: document.getElementById('thursdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('thursdayStart').value}-${document.getElementById('thursdayEnd').value}`
+                },
+                friday: {
+                    isAvailable: document.getElementById('fridayToggle').innerText === 'Available',
+                    time: `${document.getElementById('fridayStart').value}-${document.getElementById('fridayEnd').value}`
+                },
+                saturday: {
+                    isAvailable: document.getElementById('saturdayToggle').innerText === 'Available',
+                    time: `${document.getElementById('saturdayStart').value}-${document.getElementById('saturdayEnd').value}`
+                },
+                sunday: {
+                    isAvailable: document.getElementById('sundayToggle').innerText === 'Available',
+                    time: `${document.getElementById('sundayStart').value}-${document.getElementById('sundayEnd').value}`
+                },
+                unavailableDates: Array.from(document.querySelectorAll('#unavailableList li')).map(li => li.textContent.split(' ')[0])
+            };
+
+            // Save to Firestore
+            try {
+                await db.collection('availability').doc('weekly').set(availability);
+                document.getElementById('status').innerText = 'Availability saved successfully!';
+            } catch (error) {
+                document.getElementById('status').innerText = 'Error saving availability. Please try again.';
+            }
+        });
+    </script>
 </body>
 </html>
